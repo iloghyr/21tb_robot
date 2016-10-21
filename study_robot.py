@@ -5,7 +5,7 @@
 Created on 2016-7-29
 
 Author: iloghyr
-Mail:   236016332@qq.com
+Mail:   loghyr@163.com
 Tips:   21tb在线学习网站课程学习脚本，自动学习机器人
 """
 
