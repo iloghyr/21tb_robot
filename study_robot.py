@@ -25,6 +25,7 @@ sys.setdefaultencoding('utf-8')
 def log(info):
     """simple log"""
     print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()), info
+    sys.stdout.flush()
 
 class Http(object):
 
