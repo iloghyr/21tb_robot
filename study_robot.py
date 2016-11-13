@@ -24,8 +24,9 @@ sys.setdefaultencoding('utf-8')
 
 def log(info):
     """simple log"""
-    print time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()), info
+    print time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()), info
     sys.stdout.flush()
+
 
 class Http(object):
 
@@ -118,7 +119,6 @@ class ConfigMgr(object):
             configs = self._configer.items(section)
             return dict(configs)
         raise Exception("config file not loaded")
-
 
 
 class Study(object):
@@ -241,7 +241,7 @@ class Study(object):
         try:
             if not r:
                 params_res = {'courseId': course_id, 'scoId': score_id}
-                r = self.http.post(API_SELECT_RES, params_res)
+                r = self.http.post(self.apis['select_resourse'], params_res)
                 #判断完成条件之2，查询接口
                 if r.get('isComplete') == 'true':
                     return True
@@ -302,7 +302,10 @@ class Study(object):
                 course_list.append(course.strip())
         self.do_login()
         for course_id in course_list:
-            self.study(course_id)
+            try:
+                self.study(course_id)
+            except Exception as e:
+                log("exception occured, study next..")
         cost = int(time.time() - s)
         log('main end, cost: %ss' % cost)
 
