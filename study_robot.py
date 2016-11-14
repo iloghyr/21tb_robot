@@ -194,10 +194,11 @@ class Study(object):
         children_list = ret_json['children']
         item_list = []
         for item in children_list:
-            cell = {}
-            cell['name'] = item['children'][0]['text']
-            cell['scoId'] = item['children'][0]['id']
-            item_list.append(cell)
+            for i in item['children']:
+                cell = {}
+                cell['name'] = i['text']
+                cell['scoId'] = i['id']
+                item_list.append(cell)
         if pretty:
             for i in item_list:
                 log('课程名: %s %s' % (i['name'], i['scoId']))
