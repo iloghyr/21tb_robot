@@ -21,6 +21,8 @@ import ConfigParser
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+"""conf文件名的定义"""
+kConfFileName = "main0.conf"
 
 def log(info):
     """simple log"""
@@ -96,7 +98,7 @@ class ConfigMgr(object):
         """
         self._configer = None
         self.work_dir = os.path.dirname(__file__)
-        self.config_file = os.path.join(self.work_dir, 'main.conf')
+        self.config_file = os.path.join(self.work_dir, kConfFileName)
 
     def init(self):
         """
@@ -146,6 +148,7 @@ class Study(object):
             'update_timestep': self._make_api('update_timestep'),
             'course_show': self._make_api('course_show'),
             'heartbeat': self._make_api('heartbeat'),
+            'course_center': self._make_api('course_center'),
             'enter_course': self._make_api('enter_course')
             }
 
@@ -185,6 +188,42 @@ class Study(object):
             log('do heartbeat, %s' % ret.get('success'))
         except Exception as e:
             log('do heartbeat, %s, ret:%s' % (ret.get('failure'), str(ret)))
+
+    def get_my_course(self):
+    	"""getmycourse"""
+    	params = {
+    		'page.pageSize': '12',
+    		'page.sortName': 'STUDYTIME',
+            'page.pageNo': '1',
+    		'_': int(time.time())
+    	    }
+    	try:
+    		ret = self.http.get(self.apis['course_center'], params)
+    		log('获取课程中心成功')
+    	except Exception, e:
+    		log('获取课程中心失败')
+        courseListRaw = ret['rows']
+        courseList = []
+        for i in courseListRaw:
+            if i.get('getScoreTime') is not None:
+                continue
+            courseList.append(i.get('courseId').encode('utf-8'))
+        log('课程中心共有%s门课程未完成' % len(courseList))
+        return courseList
+
+    def read_local_studyList(self, course_list):
+        """优先学习study.list的课程"""
+        if os.path.exists(os.getcwd() + '/' + 'study.list'):
+            log("study.list文件存在, 将优先学习")
+            prefreList = []
+            with open('study.list') as f:
+                for course in f:
+                    prefreList.append(course.strip().encode('utf-8'))
+            prefreList.extend(course_list)
+            return prefreList
+        else:
+            log("study.list文件不存在将直接学习")
+            return course_list
 
     def get_course_items(self, course_id, pretty=False):
         """get course child items"""
@@ -303,11 +342,8 @@ class Study(object):
     def run(self):
         """入口"""
         s = time.time()
-        course_list = []
-        with open('study.list') as f:
-            for course in f:
-                course_list.append(course.strip())
         self.do_login()
+        course_list = self.read_local_studyList(self.get_my_course())
         for course_id in course_list:
             try:
                 self.study(course_id)
@@ -320,23 +356,3 @@ class Study(object):
 if __name__ == '__main__':
     study = Study()
     study.run()
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
